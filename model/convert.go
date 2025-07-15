@@ -1,7 +1,7 @@
 package model
 
 type ConvertRequest struct {
-	Subscriptions []string          `form:"subscription" json:"subscription"`
+	Subscriptions []string          `form:"subscriptions" json:"subscriptions"`
 	Proxies       []string          `form:"proxy" json:"proxy"`
 	Template      string            `form:"template" json:"template"`
 	Delete        string            `form:"delete" json:"delete"`
