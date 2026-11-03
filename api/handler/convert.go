@@ -25,8 +25,7 @@ func Convert(c *gin.Context) {
 		})
 		return
 	}
-	var data model.ConvertRequest
-	err = json.Unmarshal([]byte(j), &data)
+	data, err := model.ParseConvertRequest([]byte(j))
 	if err != nil {
 		c.JSON(400, gin.H{
 			"error": err.Error(),
@@ -45,6 +44,7 @@ func Convert(c *gin.Context) {
 		c.JSON(400, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 	result, err := common.Convert(
 		data.Subscriptions,

@@ -18,7 +18,7 @@
   "delete": "剩余流量",
   "rename": { "原文本": "新文本" },
   "group-type": "selector",
-  "sort": "name",
+  "sort": "tag",
   "sort-type": "asc",
   "output": "./config.json",
   "user-agent": "自定义 User-Agent"
@@ -32,6 +32,12 @@ sub2sing-box convert -c ./sub2sing-box.json
 ```
 
 即可生成 sing-box 配置，无需每次重复设置参数。
+
+补充说明：
+
+- `subscriptions` / `proxies` 必须写成数组，分别对应命令行里的 `-s` 与 `-p`。
+- `sort` 只接受 `tag`（按分组名排序）或 `num`（按分组内节点数量排序），其他值会被当作 `tag`。
+- 配置键名是严格的：拼错或写了未知的键会直接报错，不会被静默忽略（`/convert` 接口的 `data` 同样适用）。
 
 ## 模板
 
@@ -136,12 +142,12 @@ sub2sing-box convert -c ./sub2sing-box.json
 sub2sing-box convert -t sing-box-template.json -p "链接1" -p "链接2" -p "链接3" -o config.json
 ```
 
-链接里如果含逗号（例如 ssh 的 `host_key_algorithms=ssh-ed25519,rsa-sha2-256`），这个逗号会被命令行框架当成参数分隔符拆开，此时请改用配置文件（`-c sub2sing-box.json`）里的 `proxy` 数组：
+链接里如果含逗号（例如 ssh 的 `host_key_algorithms=ssh-ed25519,rsa-sha2-256`），这个逗号会被命令行框架当成参数分隔符拆开，此时请改用配置文件（`-c sub2sing-box.json`）里的 `proxies` 数组：
 
 ```json
 {
   "template": "sing-box-template.json",
-  "proxy": ["ssh://root:password@host:22?host_key_algorithms=ssh-ed25519,rsa-sha2-256#SSH"],
+  "proxies": ["ssh://root:password@host:22?host_key_algorithms=ssh-ed25519,rsa-sha2-256#SSH"],
   "output": "config.json"
 }
 ```

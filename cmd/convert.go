@@ -53,13 +53,16 @@ var convertCmd = &cobra.Command{
 }
 
 func convertRun(cmd *cobra.Command, args []string) {
-	loadConfig()
+	if err := loadConfig(); err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
 	groupRulesMap := make(map[string][]string)
 	if groupRules != "" {
 		err := json.Unmarshal([]byte(groupRules), &groupRulesMap)
 		if err != nil {
 			fmt.Println("Error parsing group rules:", err)
-			return
+			os.Exit(1)
 		}
 	}
 	result, err := common.Convert(
@@ -77,13 +80,13 @@ func convertRun(cmd *cobra.Command, args []string) {
 	)
 	if err != nil {
 		fmt.Println("Conversion error:", err)
-		return
+		os.Exit(1)
 	}
 	if output != "" {
 		err = os.WriteFile(output, []byte(result), 0666)
 		if err != nil {
 			fmt.Println("Error writing to file:", err)
-			return
+			os.Exit(1)
 		}
 		fmt.Println("Config has been saved in:", output)
 	} else {
@@ -91,32 +94,30 @@ func convertRun(cmd *cobra.Command, args []string) {
 	}
 }
 
-func loadConfig() {
+func loadConfig() error {
 	if config == "" {
-		if wd, err := os.Getwd(); err == nil {
-			config = filepath.Join(wd, "sub2sing-box.json")
-			if _, err := os.Stat(config); os.IsNotExist(err) {
-				return
-			}
-		} else {
-			fmt.Println("Error getting working directory:", err)
-			return
+		wd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("getting working directory: %w", err)
+		}
+		config = filepath.Join(wd, "sub2sing-box.json")
+		if _, err := os.Stat(config); os.IsNotExist(err) {
+			return nil
 		}
 	}
 
 	bytes, err := os.ReadFile(config)
 	if err != nil {
-		fmt.Println("Error reading config file:", err)
-		return
+		return fmt.Errorf("reading config file: %w", err)
 	}
 
-	var cfg model.ConvertRequest
-	if err := json.Unmarshal(bytes, &cfg); err != nil {
-		fmt.Println("Error parsing config JSON:", err)
-		return
+	cfg, err := model.ParseConvertRequest(bytes)
+	if err != nil {
+		return fmt.Errorf("parsing config JSON: %w", err)
 	}
 
 	mergeConfig(cfg)
+	return nil
 }
 
 func mergeConfig(cfg model.ConvertRequest) {
